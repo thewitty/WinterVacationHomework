@@ -1,6 +1,6 @@
 import requests
 import stylecloud
-
+from lxml import etree
 import jieba
 import re
 from bs4 import BeautifulSoup
@@ -29,14 +29,28 @@ def get_html(url,myheaders):
    
     try:
         html = requests.get(url,headers = myheaders)
-        html.encoding = html.apparent_encoding
+        #html.encoding = html.apparent_encoding
+        html.encoding =  'utf-8'
         if html.status_code == 200:
             print('成功获取源代码')
     except Exception as e :
         print('获取代码失败:s% ' % e)
     return html.text
     
+def get():
+
+    html = get_html(r'https://movie.douban.com/cinema/nowplaying/xian/',headers)
+    #整理文档对象
+    html = etree.HTML(html)
+    id = html.xpath('//*[@id="nowplaying"]//li/@id')
+    title = html.xpath('//*[@id="nowplaying"]//li/@data-title')
+
+    data=list(zip(id,title))
+    return data
     
+    
+    
+
 def spider_comment(movie_id, page):
     comment_list = []
     #写出文件
@@ -66,17 +80,20 @@ def movie_analyse(movie_id,page):
 
 # 主函数
 if __name__ == '__main__':
-	
-    movie_id = '34841067'
+	#movie_id = '34841067'
     #你好，李焕英
     page = 10
-    movie_analyse('34841067',10)
-    '''
-    spider_comment(movie_id, page)
-    #result = ''
-    result = jieba_segment(str(movie_id) + ".txt" )
-    print(result)
-    gen_stylecloud_byText(result,str(movie_id) + ".png")
-    '''
-  
+    data=get()
+    
+    for i in range (len(data)):
+        movie_id = data[i][0]
+        name=data[i][1]
+        print(movie_id)
+        print(name)
+        movie_analyse(movie_id,10)
+        
+        
+
+
+
 
