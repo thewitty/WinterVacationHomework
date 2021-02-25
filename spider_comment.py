@@ -8,14 +8,39 @@ headers = {
      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:64.0) Gecko/20100101 Firefox/64.0'
 }
 
+# 创建停用词list
+def stopwordslist(filepath):
+    stopwords = [line.strip() for line in open(filepath, 'r').readlines()]
+    return stopwords
+
+# 对句子进行分词
+def seg_sentence(sentence):
+    sentence_seged = jieba.cut(sentence.strip())
+    stopwords = stopwordslist('stopwords.txt')  # 这里加载停用词的路径
+    outstr = ''
+    for word in sentence_seged:
+        if word not in stopwords:
+            if word != '\t':
+                outstr += word
+                outstr += " "
+    return outstr
+    
+    
 
 def jieba_segment(file_name):
     with open(file_name, 'r', encoding='utf8') as f:
-        word_list = jieba.cut(f.read())
-
-        result = " ".join(word_list)    # 分词用  隔开
+        word_list=''
+        inputs = open(file_name, 'r', encoding='utf8' )
+        for line in inputs:
+            line_seg = seg_sentence(line)  # 这里的返回值是字符串
+            word_list +=( '\n'+ line_seg)
+        inputs.close()
         
-       # f.close()
+        result = word_list #已经分开就不用加了
+        #word_list = jieba.cut(f.read(), cut_all=False )
+        #result = " ".join(word_list)    # 分词用空格隔开
+        
+       #f.close()
         return result
         
         
@@ -73,16 +98,19 @@ def spider_comment(movie_id, page):
     
 def movie_analyse(movie_id,page):
 	spider_comment(movie_id, page)
-	result = jieba_segment(str(movie_id) + ".txt")
+	result = jieba_segment(movie_id + ".txt")
 	gen_stylecloud_byText(result,str(movie_id) + ".png")
 	
 
 
 # 主函数
 if __name__ == '__main__':
-	#movie_id = '34841067'
-    #你好，李焕英
     page = 10
+    '''
+    movie_id = '34841067'
+    #你好，李焕英
+    movie_analyse(movie_id,page)
+    '''
     data=get()
     
     for i in range (len(data)):
@@ -90,7 +118,7 @@ if __name__ == '__main__':
         name=data[i][1]
         print(movie_id)
         print(name)
-        movie_analyse(movie_id,10)
+        movie_analyse(movie_id,page)
         
         
 
